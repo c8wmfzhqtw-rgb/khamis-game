@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 لعبة الخميس</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      direction: rtl;
+    }
+    h1 {
+      color: #00ffcc;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      max-width: 600px;
+      margin: 30px auto;
+    }
+    .card {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: 0.3s;
+    }
+    .card:hover {
+      background: #00ffcc;
+      color: #000;
+    }
+    .question {
+      margin-top: 30px;
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎮 لعبة الخميس</h1>
+  <p>اختر سؤال 👇</p>
+
+  <div class="board">
+    <div class="card" onclick="showQuestion(200)">200</div>
+    <div class="card" onclick="showQuestion(400)">400</div>
+    <div class="card" onclick="showQuestion(600)">600</div>
+  </div>
+
+  <div class="question" id="questionBox"></div>
+
+  <script>
+    function showQuestion(points) {
+      let q = "";
+      if (points === 200) {
+        q = "❓ ما هي عاصمة العراق؟";
+      } else if (points === 400) {
+        q = "❓ من هو أول رئيس وزراء للعراق بعد 2003؟";
+      } else if (points === 600) {
+        q = "❓ في أي سنة تأسست الدولة العراقية الحديثة؟";
+      }
+      document.getElementById("questionBox").innerHTML =
+        q + "<br><br>🏆 النقاط: " + points;
+    }
+  </script>
+
+</body>
+</html>
