@@ -5,101 +5,85 @@
 <title>🎮 لعبة الخميس</title>
 
 <style>
-body {
+body{
   background:#0f172a;
   color:white;
-  font-family:Arial, sans-serif;
+  font-family:Arial;
   text-align:center;
   direction:rtl;
   margin:0;
 }
+h1{margin:10px}
 
-h1 {
-  margin:15px 0;
-}
-
-.score {
+.score{
   display:flex;
   justify-content:center;
   gap:40px;
-  font-size:20px;
-  margin-bottom:10px;
-}
-
-.board {
-  display:grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap:6px;
-  max-width:1200px;
-  margin:10px auto;
-}
-
-.cat {
-  background:#1e293b;
-  padding:8px;
-  font-weight:bold;
-  font-size:14px;
-}
-
-.cell {
-  background:#2563eb;
-  padding:14px;
-  cursor:pointer;
-  border-radius:6px;
   font-size:18px;
 }
 
-.cell:hover {
-  background:#1d4ed8;
+.board{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  max-width:1000px;
+  margin:15px auto;
 }
 
-.cell.used {
+.cat{
+  background:#1e293b;
+  padding:8px;
+  font-weight:bold;
+}
+
+.cell{
+  background:#2563eb;
+  padding:15px;
+  cursor:pointer;
+  border-radius:6px;
+}
+.cell.used{
   background:#020617;
   cursor:not-allowed;
 }
 
 /* نافذة السؤال */
-#overlay {
+#overlay{
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.7);
+  inset:0;
+  background:rgba(0,0,0,.7);
   display:none;
-  z-index:999;
 }
 
-#questionBox {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #020617;
-  padding: 25px;
-  width: 90%;
-  max-width: 420px;
-  border-radius: 10px;
-  display: none;
-  z-index: 1000;
+#popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#020617;
+  padding:20px;
+  width:90%;
+  max-width:420px;
+  border-radius:10px;
+  display:none;
 }
 
-#questionText {
-  margin-bottom:20px;
-}
-
-button {
-  margin:5px;
-  padding:10px 20px;
-  font-size:16px;
+.answer{
+  background:#1e293b;
+  padding:10px;
+  margin:8px 0;
   cursor:pointer;
+  border-radius:6px;
 }
+
+.answer.correct{background:#16a34a}
+.answer.wrong{background:#dc2626}
 </style>
 </head>
 
 <body>
 
-<h1>🎤 لعبة الخميس العراقية</h1>
+<h1>🎤 لعبة الخميس</h1>
 
 <div class="score">
   <div>فريق 1: <span id="s1">0</span></div>
@@ -110,35 +94,39 @@ button {
 
 <div id="overlay"></div>
 
-<div id="questionBox">
-  <h2 id="questionText"></h2>
-  <button onclick="answer(true)">✅ صح</button>
-  <button onclick="answer(false)">❌ خطأ</button>
+<div id="popup">
+  <h3 id="qText"></h3>
+  <div id="answers"></div>
 </div>
 
 <script>
-let currentPoints = 0;
-let currentCell = null;
-let turn = 1;
-let score1 = 0;
-let score2 = 0;
+let turn=1, s1=0, s2=0, currentPoints=0, currentCell=null;
 
-const categories = [
-  "بغداد","البصرة","نينوى","كربلاء","النجف","أربيل",
-  "السليمانية","دهوك","كركوك","الأنبار","ديالى","بابل",
-  "واسط","ذي قار","ميسان","القادسية","المثنى","صلاح الدين",
-  "معلومات عامة","تاريخ العراق","رياضة","أمثال شعبية"
+const categories=[
+  "بغداد","البصرة","نينوى","معلومات عامة"
 ];
 
-const questions = {
-  200: "❓ سؤال سهل: ما هي عاصمة العراق؟",
-  400: "❓ سؤال متوسط: في أي قارة يقع العراق؟",
-  600: "❓ سؤال صعب: متى تأسست الدولة العراقية الحديثة؟"
+const questions={
+  200:{
+    q:"ما عاصمة العراق؟",
+    a:["بغداد","البصرة","الموصل","أربيل"],
+    c:0
+  },
+  400:{
+    q:"في أي قارة يقع العراق؟",
+    a:["آسيا","أفريقيا","أوروبا","أمريكا"],
+    c:0
+  },
+  600:{
+    q:"متى تأسست الدولة العراقية الحديثة؟",
+    a:["1921","1918","1932","1958"],
+    c:0
+  }
 };
 
-const board = document.getElementById("board");
+const board=document.getElementById("board");
 
-/* إنشاء العناوين */
+/* عناوين */
 categories.forEach(c=>{
   let d=document.createElement("div");
   d.className="cat";
@@ -146,42 +134,59 @@ categories.forEach(c=>{
   board.appendChild(d);
 });
 
-/* إنشاء الخانات */
+/* الخانات */
 [200,400,600].forEach(p=>{
   categories.forEach(()=>{
     let d=document.createElement("div");
     d.className="cell";
     d.innerText=p;
-    d.onclick=()=>showQuestion(d,p);
+    d.onclick=()=>openQ(d,p);
     board.appendChild(d);
   });
 });
 
-function showQuestion(cell,points){
-  if(cell.classList.contains("used")) return;
-  currentCell = cell;
-  currentPoints = points;
-  document.getElementById("questionText").innerText = questions[points];
-  document.getElementById("overlay").style.display="block";
-  document.getElementById("questionBox").style.display="block";
+function openQ(cell,points){
+  if(cell.classList.contains("used"))return;
+  currentCell=cell;
+  currentPoints=points;
+  let q=questions[points];
+  document.getElementById("qText").innerText=q.q;
+  let box=document.getElementById("answers");
+  box.innerHTML="";
+  q.a.forEach((txt,i)=>{
+    let div=document.createElement("div");
+    div.className="answer";
+    div.innerText=txt;
+    div.onclick=()=>check(i,q.c,div);
+    box.appendChild(div);
+  });
+  overlay.style.display=popup.style.display="block";
 }
 
-function answer(correct){
-  if(correct){
-    if(turn===1){ score1+=currentPoints; }
-    else { score2+=currentPoints; }
+function check(i,c,div){
+  let answers=document.querySelectorAll(".answer");
+  answers[c].classList.add("correct");
+  if(i!==c) div.classList.add("wrong");
+
+  if(i===c){
+    turn===1 ? s1+=currentPoints : s2+=currentPoints;
   }
 
-  document.getElementById("s1").innerText=score1;
-  document.getElementById("s2").innerText=score2;
+  s1El.innerText=s1;
+  s2El.innerText=s2;
 
   currentCell.classList.add("used");
 
-  document.getElementById("overlay").style.display="none";
-  document.getElementById("questionBox").style.display="none";
-
-  turn = turn===1 ? 2 : 1;
+  setTimeout(()=>{
+    overlay.style.display=popup.style.display="none";
+    turn=turn===1?2:1;
+  },1500);
 }
+
+const s1El=document.getElementById("s1");
+const s2El=document.getElementById("s2");
+const overlay=document.getElementById("overlay");
+const popup=document.getElementById("popup");
 </script>
 
 </body>
