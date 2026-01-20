@@ -1,80 +1,138 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لعبة الخميس العراقية</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 20px 0;
-    }
-
-    .board {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    .category {
-      background: #1e293b;
-      padding: 10px;
-      font-weight: bold;
-      border-radius: 6px;
-    }
-
-    .cell {
-      background: #2563eb;
-      padding: 20px;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 20px;
-    }
-
-    .cell:hover {
-      background: #1d4ed8;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>🎮 لعبة الخميس</title>
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  direction:rtl;
+}
+h1 { margin:10px; }
+.score {
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  font-size:20px;
+}
+.board {
+  display:grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap:8px;
+  max-width:1200px;
+  margin:20px auto;
+}
+.cat {
+  background:#1e293b;
+  padding:10px;
+  font-weight:bold;
+}
+.cell {
+  background:#2563eb;
+  padding:15px;
+  cursor:pointer;
+  border-radius:6px;
+}
+.cell.used {
+  background:#020617;
+  cursor:not-allowed;
+}
+#questionBox {
+  background:#020617;
+  padding:20px;
+  margin:20px;
+  display:none;
+}
+button {
+  margin:10px;
+  padding:10px 20px;
+  font-size:16px;
+}
+</style>
 </head>
+
 <body>
 
 <h1>🎤 لعبة الخميس العراقية</h1>
 
-<div class="board">
-  <!-- عناوين الفئات -->
-  <div class="category">بغداد</div>
-  <div class="category">البصرة</div>
-  <div class="category">نينوى</div>
-  <div class="category">معلومات عامة</div>
-
-  <!-- 200 -->
-  <div class="cell">200</div>
-  <div class="cell">200</div>
-  <div class="cell">200</div>
-  <div class="cell">200</div>
-
-  <!-- 400 -->
-  <div class="cell">400</div>
-  <div class="cell">400</div>
-  <div class="cell">400</div>
-  <div class="cell">400</div>
-  
-
-
-  <!-- 600 -->
-  <div class="cell">600</div>
-  <div class="cell">600</div>
-  <div class="cell">600</div>
-  <div class="cell">600</div>
+<div class="score">
+  <div>فريق 1: <span id="s1">0</span></div>
+  <div>فريق 2: <span id="s2">0</span></div>
 </div>
+
+<div class="board" id="board"></div>
+
+<div id="questionBox">
+  <h2 id="questionText"></h2>
+  <button onclick="answer(true)">✅ صح</button>
+  <button onclick="answer(false)">❌ خطأ</button>
+</div>
+
+<script>
+let currentPoints = 0;
+let currentCell = null;
+let turn = 1;
+let score1 = 0;
+let score2 = 0;
+
+const categories = [
+  "بغداد","البصرة","نينوى","كربلاء","النجف","أربيل",
+  "السليمانية","دهوك","كركوك","الأنبار","ديالى","بابل",
+  "واسط","ذي قار","ميسان","القادسية","المثنى","صلاح الدين",
+  "معلومات عامة","تاريخ العراق","رياضة","أمثال شعبية"
+];
+
+const questions = {
+  200: "سؤال سهل: ما هي عاصمة العراق؟",
+  400: "سؤال متوسط: في أي قارة يقع العراق؟",
+  600: "سؤال صعب: متى تأسست الدولة العراقية الحديثة؟"
+};
+
+const board = document.getElementById("board");
+
+/* عناوين */
+categories.forEach(c=>{
+  let d=document.createElement("div");
+  d.className="cat";
+  d.innerText=c;
+  board.appendChild(d);
+});
+
+/* الأسئلة */
+[200,400,600].forEach(p=>{
+  categories.forEach(()=>{
+    let d=document.createElement("div");
+    d.className="cell";
+    d.innerText=p;
+    d.onclick=()=>showQuestion(d,p);
+    board.appendChild(d);
+  });
+});
+
+function showQuestion(cell,points){
+  if(cell.classList.contains("used")) return;
+  currentCell = cell;
+  currentPoints = points;
+  document.getElementById("questionText").innerText = questions[points];
+  document.getElementById("questionBox").style.display="block";
+}
+
+function answer(correct){
+  if(correct){
+    if(turn===1){ score1+=currentPoints; }
+    else { score2+=currentPoints; }
+  }
+  document.getElementById("s1").innerText=score1;
+  document.getElementById("s2").innerText=score2;
+
+  currentCell.classList.add("used");
+  document.getElementById("questionBox").style.display="none";
+  turn = turn===1 ? 2 : 1;
+}
+</script>
 
 </body>
 </html>
